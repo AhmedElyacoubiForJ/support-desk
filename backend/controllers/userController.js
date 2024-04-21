@@ -1,7 +1,7 @@
 const asyncHandler = require("express-async-handler");
 const bcrypt = require("bcryptjs");
 
-const User = require("../models/userModel")
+const User = require("../models/userModel");
 
 // @desc    Register a new user
 // @route   /api/users/register
@@ -18,7 +18,7 @@ const registerUser = asyncHandler(async (req, res) => {
   // Find if the user is already exists
   const userExists = await User.findOne({ email: email });
 
-  if(userExists) {
+  if (userExists) {
     res.status(400);
     throw new Error("User already exists");
   }
@@ -41,7 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
       name: user.name,
       email: user.email,
       // isAdmin: user.isAdmin,
-    }) 
+    });
   } else {
     res.status(400);
     throw new Error("Invalid user data");
@@ -54,7 +54,32 @@ const registerUser = asyncHandler(async (req, res) => {
 // @route   /api/users/login
 // @access  Public
 const loginUser = asyncHandler(async (req, res) => {
-  res.send("Login Route");
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    res.status(400);
+    throw new Error("Please include all fields");
+  }
+
+  const user = await User.findOne({ email: email });
+  if (!user) {
+    res.status(400);
+    throw new Error("User not found");
+  }
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    res.status(401);
+    throw new Error("Invalid password");
+  }
+  // Send back the user
+  res.status(200).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+  });
+
+  //res.send("Login Route");
 });
 
 module.exports = {
