@@ -1,35 +1,55 @@
-import { useState } from "react";
-import { useSelector } from "react-redux";
+import { useState, useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { createTicket, reset } from "../features/tickets/ticketSlice";
+import Spinner from "../components/Spinner";
+import BackButton from "../components/BackButton";
 
 function NewTicket() {
   // Get user from the global state store
   const { user } = useSelector((state) => state.auth);
+  const { isLoading, isError, isSuccess, message } = useSelector(
+    (state) => state.ticket
+  );
   const [name] = useState(user.name);
   const [email] = useState(user.email);
   const [product, setProduct] = useState("");
   const [description, setDescription] = useState("");
 
-  // Create a new ticket object
-  const [newTicket, setNewTicket] = useState({
-    title: "",
-    description: "",
-    status: "new",
-    user: user.id,
-  });
-  // Update the new ticket object
- /*  const handleChange = (e) => {
-    setNewTicket({
-      ...newTicket,
-      [e.target.name]: e.target.value,
-    });
-  }; */
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isError) {
+      toast.error(message);
+    }
+    if (isSuccess) {
+      dispatch(reset());
+      navigate("/tickets");
+    }
+
+    dispatch(reset());
+  }, [isError, isSuccess, message, navigate, dispatch]);
+
   // Submit the new ticket
   const onSubmit = (e) => {
     e.preventDefault();
-    console.log(newTicket);
+    dispatch(
+      createTicket({
+        product: product,
+        description: description,
+      })
+    );
   };
+
+  if (isLoading) {
+    return <Spinner />;
+  }
+
   return (
     <>
+      <BackButton url="/" />
       <section className="heading">
         <h1>Create New Ticket</h1>
         <p>Please fill out the from below</p>
