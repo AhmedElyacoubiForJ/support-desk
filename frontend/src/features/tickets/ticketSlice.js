@@ -146,7 +146,7 @@ const ticketSlice = createSlice({
       .addCase(closeTicket.fulfilled, (state, action) => {
         state.isLoading = false;
         // close the ticket
-        state.tickets = state.tickets.map((ticket) =>
+        state.tickets.map((ticket) =>
           ticket._id === action.payload._id
             ? { ...ticket, status: "closed" }
             : ticket
